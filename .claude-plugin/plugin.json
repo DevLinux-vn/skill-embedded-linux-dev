@@ -1,7 +1,7 @@
 {
   "name": "embedded-linux-dev",
   "version": "0.1.0",
-  "description": "Skills for embedded Linux kernel drivers (I2C/SPI/UART), userspace programs, and Yocto/Buildroot integration on Raspberry Pi, BeagleBone Black and Lichee Pi Nano.",
+  "description": "Extensible skills for embedded Linux development: kernel drivers and userspace apps across boards and build systems (Yocto, Buildroot). Initial focus: I2C, SPI, UART with device tree, pinctrl, IRQ and GPIO.",
   "author": { "name": "DevLinux", "email": "admin@devlinux.vn" },
-  "keywords": ["embedded-linux", "device-driver", "device-tree", "yocto", "buildroot", "i2c", "spi", "uart"]
+  "keywords": ["embedded-linux", "kernel-driver", "userspace", "device-tree", "yocto", "buildroot", "i2c", "spi", "uart"]
 }
