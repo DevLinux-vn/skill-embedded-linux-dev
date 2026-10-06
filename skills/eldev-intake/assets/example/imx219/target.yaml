@@ -1,0 +1,12 @@
+# The one module being worked on. Same marking rules as board.yaml.
+target: imx219
+kind: external                # external (wired to the board) | platform (inside the SoC)
+description: Sony IMX219 8MP image sensor, Raspberry Pi Camera Module v2, MIPI CSI-2
+subsystem: media              # V4L2 sub-device; verified: drivers/media/i2c/imx219.c
+control: i2c 0x10 on the VC camera I2C bus   # verified: sony,imx219.yaml, imx219-overlay.dts
+data: CSI-2, 2 lanes, link 456 MHz, receiver csi1   # verified: overlay data-lanes <1 2>, binding example
+clock: 24 MHz xclk            # verified: imx219.c IMX219_XCLK_FREQ
+power: VANA 2.8V, VDIG 1.8V, VDDL 1.2V   # verified: sony,imx219.yaml
+reset: optional reset-gpios, release after supplies are on   # verified: sony,imx219.yaml
+dt: sony,imx219               # verified: binding Documentation/devicetree/bindings/media/i2c/sony,imx219.yaml
+reference: drivers/media/i2c/imx219.c   # mainline driver, chip id 0x0219 at reg 0x0000

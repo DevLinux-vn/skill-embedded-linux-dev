@@ -1,0 +1,27 @@
+# Fixed facts about the board. No comment = given by the user.
+# "# verified: <src>" = checked against a primary source. "# assumed" = confirm first. Empty = unknown.
+board: rpi4b
+soc: BCM2711                  # verified: meta-raspberrypi raspberrypi4-64.conf
+arch: arm64                   # verified: same
+kernel:
+  version: "6.18.x"           # verified: wrynose rpi-default-versions.inc (confirm for raspberrypi4-64)
+  source_path:
+  defconfig: bcm2711_defconfig  # assumed
+  dts: broadcom/bcm2711-rpi-4-b.dts  # verified: raspberrypi4-64.conf
+toolchain:
+  triple: aarch64-poky-linux  # assumed, confirm from the SDK
+  debugger: gdb-multiarch     # assumed
+buildsys:
+  type: yocto
+  release: wrynose            # verified: newest meta-raspberrypi branch
+  machine: raspberrypi4-64    # verified: conf/machine/raspberrypi4-64.conf
+  image: core-image-base      # verified: layer README example
+commands:                     # replace with your own build guide
+  image: bitbake core-image-base   # verified: layer README
+  kernel: bitbake -c compile -f virtual/kernel  # assumed
+  deploy:
+flash: sd-card                # assumed
+console: ttyS0 115200         # verified: raspberrypi4-64.conf SERIAL_CONSOLES
+ssh:
+io_voltage: 3.3V              # assumed
+manual: manual/INDEX.md     # markdown manual and its chapter index, see SKILL.md
