@@ -37,6 +37,89 @@ plugin never guesses pins, voltages, addresses or build commands.
 A worked example (Raspberry Pi 4B + IMX219 camera on Yocto) is in
 `skills/eldev-intake/assets/example/`.
 
+## Usage
+
+### 1. Install
+
+Load the plugin from a local clone:
+
+```
+git clone https://github.com/DevLinux-vn/skill-embedded-linux-dev
+claude --plugin-dir ./skill-embedded-linux-dev
+```
+
+The PDF converter needs one package: `pip install pymupdf4llm`. The other script uses only the Python standard library.
+
+### 2. Set up your project
+
+Skills read these files from your project root. You supply them; the plugin never fills in pins, voltages, addresses or build commands for you.
+
+```
+<project>/
+├── CLAUDE.md                      pointer to the active board and target
+├── boards/<board>/
+│   ├── board.yaml                 SoC, kernel, toolchain, build system and commands, flash, debug
+│   ├── pinout.md                  pins, functions, voltage
+│   ├── build-guide.md             your build instructions
+│   ├── dt/                        device tree, defconfig
+│   └── manual/                    reference manual chapters (markdown)
+└── targets/<target>/
+    ├── target.yaml                the one module being worked on
+    └── docs/                      its datasheets
+```
+
+Add the pointer to `CLAUDE.md` so every session knows what is active:
+
+```
+## Embedded context
+Board: rpi4b (boards/rpi4b/board.yaml, manual in boards/rpi4b/manual/)
+Target: imx219 (targets/imx219/target.yaml)
+```
+
+A filled `board.yaml` and `target.yaml` for Raspberry Pi 4B + IMX219 are in `skills/eldev-intake/assets/example/`; copy and edit them.
+
+### 3. Use the skills
+
+Skills trigger from what you ask; you do not have to name them.
+
+| You say | What happens |
+|---|---|
+| "Write a driver for the IMX219 on my Pi 4B" | `eldev-router` reads the context, classifies the request and hands off. If anything needed is missing, `eldev-intake` runs the readiness check and stops with a list of what to add |
+| "Set up context for this board" / "I changed the kernel to 6.12" | `eldev-intake` creates or updates `board.yaml` and `target.yaml`; your values always win and guesses are marked `# assumed` |
+| "Here is the BCM2711 manual PDF" | `eldev-intake` converts it with `pdf_to_md.py` into chapter files |
+
+Only the router and intake skills exist so far; the driver, integrate, debug and log skills are planned (see the table above).
+
+### 4. Scripts
+
+Run them from your project root. `<plugin>` is the directory you cloned.
+
+**Readiness check** (read-only, no changes):
+
+```
+python3 <plugin>/scripts/check_context.py [--board NAME] [--target NAME] [--need i2c,gpio]
+```
+
+Board and target come from `Board:` and `Target:` in `CLAUDE.md` unless given. It reports each item as `OK`, `EMPTY`, `MISSING` or `ASSUMED`, checks that the manual chapters the module needs exist (derived from the bus in `target.yaml`, or `--need`), and ends with `READY` (exit 0) or `NOT READY` (exit 1). Exit 2 means no board or target was found.
+
+**PDF to markdown:**
+
+```
+python3 <plugin>/scripts/pdf_to_md.py manual.pdf --out boards/<board>/manual
+python3 <plugin>/scripts/pdf_to_md.py datasheet.pdf --out targets/<target>/docs
+```
+
+| Option | Meaning |
+|---|---|
+| `--split chapters\|none` | One file per PDF bookmark chapter (default), or one file. No bookmarks also gives one file |
+| `--level N` | Deepest bookmark level that starts a chapter (default 1) |
+| `--dpi N` | Resolution of extracted figures (default 200) |
+| `--min-coverage X` | Warn and exit 1 if a chapter's text coverage is below X (default 0.97) |
+
+Output in `--out`: `NN-<chapter>.md` per chapter, `images/` with each figure, `INDEX.md` (chapter, file, pages, words, figures, text coverage), and `figures.todo.txt`. Nothing is summarised, and text found inside a figure is kept beside it.
+
+To add an ASCII redraw of a block diagram, write it to `images/<same name as the png>.txt` and run the command again; it is embedded next to the image, which stays authoritative. Always check tables and multi-column pages against the PDF before relying on their values.
+
 ## Design principles
 
 - **Progressive disclosure**: skill metadata is always loaded, `SKILL.md` stays
