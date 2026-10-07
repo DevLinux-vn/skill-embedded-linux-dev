@@ -55,9 +55,11 @@ A worked example (Raspberry Pi 4B + IMX219 camera on Yocto) is in
 skills/
   eldev-router/
   eldev-intake/
+scripts/
+  pdf_to_md.py           PDF manual -> markdown chapters and figures
 ```
 
-More skills, `scripts/` and `evals/` are added with their own commits.
+More skills and `evals/` are added with their own commits.
 
 Language: skill content is English; replies follow the user's language.
 

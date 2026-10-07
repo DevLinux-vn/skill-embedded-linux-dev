@@ -17,6 +17,8 @@ Put them where the user already keeps board documents; if there is no such place
 
 A filled example (Raspberry Pi 4B + IMX219, Yocto) is in `assets/example/`. Copy it and replace the values; its field names are the schema.
 
+Scripts live in `scripts/` at the plugin root, two directories up from this skill's base directory (`<plugin>` below), so other skills can share them.
+
 ## Workflow
 
 1. Read the pointer in `CLAUDE.md`, then the board and target files it names. Stop if they answer the question.
@@ -33,7 +35,7 @@ Read `manual/INDEX.md` (chapter, file, pages, words), then open only the chapter
 When the user gives a PDF manual or datasheet instead of markdown, convert it with the script. It needs `pip install pymupdf4llm`.
 
 ```
-python3 scripts/pdf_to_md.py <file.pdf> --out <board>/manual      # a module datasheet: --out <target>/docs
+python3 <plugin>/scripts/pdf_to_md.py <file.pdf> --out <board>/manual      # a module datasheet: --out <target>/docs
 ```
 
 It splits by the PDF bookmarks (one file per chapter, or one file if there are none), extracts each figure as a png, keeps any text found inside a figure, and writes `INDEX.md` with a text-coverage figure per chapter. Nothing is summarised. If a chapter reports LOW COVERAGE, tell the user and compare against the PDF before relying on it. Tables with no ruling lines and multi-column layouts can come out flattened, so check any table whose values you will use.
