@@ -56,6 +56,7 @@ skills/
   eldev-router/
   eldev-intake/
 scripts/
+  check_context.py       readiness check for board/target context
   pdf_to_md.py           PDF manual -> markdown chapters and figures
 ```
 
