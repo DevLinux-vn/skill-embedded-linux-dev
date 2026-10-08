@@ -84,6 +84,7 @@ def clean_picture_text(text):
 def fix_text(md):
     # A replacement character between a number and a unit is the micro sign.
     md, n = re.subn(r"(?<=\d)\s?�(?=[A-Za-z])", "µ", md)
+    md = re.sub(r"(?:\s?\.){4,}", " … ", md)  # dot leaders of a table of contents are layout, not content
     md = re.sub(r"([^\n])\n(#{1,6} )", r"\1\n\n\2", md)
     return re.sub(r"\n{3,}", "\n\n", md), n
 
@@ -234,7 +235,9 @@ def tokens(text):
 def coverage(doc, first, last, md):
     pdf = tokens(" ".join(doc[i].get_text() for i in range(first - 1, last)))
     got = tokens(PAGE.sub(" ", md))
-    total = sum(pdf.values()) or 1
+    total = sum(pdf.values())
+    if not total:  # a page with no text (cover, drawing): nothing can be lost
+        return 1.0
     return sum(min(c, got[t]) for t, c in pdf.items()) / total
 
 
