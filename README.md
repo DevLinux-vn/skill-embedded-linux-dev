@@ -87,6 +87,7 @@ Skills trigger from what you ask; you do not have to name them.
 | "Write a driver for the IMX219 on my Pi 4B" | `eldev-router` reads the context, classifies the request and hands off. If anything needed is missing, `eldev-intake` runs the readiness check and stops with a list of what to add |
 | "Set up context for this board" / "I changed the kernel to 6.12" | `eldev-intake` creates or updates `board.yaml` and `target.yaml`; your values always win and guesses are marked `# assumed` |
 | "Here is the BCM2711 manual PDF" | `eldev-intake` converts it with `pdf_to_md.py` into searchable chunks |
+| "What does the manual say about I2C clock stretching?" | the skill runs `search_docs.py` and opens only the best chunks, not the whole manual |
 
 Only the router and intake skills exist so far; the driver, integrate, debug and log skills are planned (see the table above).
 
@@ -131,6 +132,14 @@ Chunks follow the headings, keep a table or figure whole, and carry their sectio
 
 To add an ASCII redraw of a block diagram, write it to `images/<same name as the png>.md` and run the command again; it is embedded next to the image, which stays authoritative.
 
+**Search the chunks:**
+
+```
+python3 <plugin>/scripts/search_docs.py boards/<board>/manual "i2c clock stretching" [-k 5] [--doc NAME]
+```
+
+Ranks chunks with BM25 (standard library only; register names such as `I2C_CLKDIV` also match `clkdiv`) and prints the best matches with section path, pages, file path and a snippet. Open only those chunk files.
+
 ## Design principles
 
 - **Progressive disclosure**: skill metadata is always loaded, `SKILL.md` stays
@@ -152,6 +161,7 @@ skills/
 scripts/
   check_context.py       readiness check for board/target context
   pdf_to_md.py           PDF manual -> searchable markdown chunks and figures
+  search_docs.py         find the right chunk (BM25)
 ```
 
 More skills and `evals/` are added with their own commits.

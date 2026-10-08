@@ -31,7 +31,13 @@ Scripts live in `scripts/` at the plugin root, two directories up from this skil
 
 ## Reference manual
 
-List the files in `manual/` and open only the chapters for the module in hand plus directly related ones (I2C work: I2C, GPIO and pinmux, clocks). The check script reports which chapters are present. Never load the whole manual.
+Manuals and datasheets are stored as small chunks (see below), so never open them whole. Find the chunk first:
+
+```
+python3 <plugin>/scripts/search_docs.py boards/<board>/manual "i2c clock stretching" -k 5
+```
+
+It prints the best chunks with their section path and page. Open only those, plus directly related ones (I2C work: I2C, GPIO and pinmux, clocks). The check script reports which chapters are present.
 
 ## Converting a PDF
 
