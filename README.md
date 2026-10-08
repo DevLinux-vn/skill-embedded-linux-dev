@@ -76,7 +76,7 @@ Board: rpi4b (boards/rpi4b/board.yaml, manual in boards/rpi4b/manual/)
 Target: imx219 (targets/imx219/target.yaml)
 ```
 
-A filled `board.yaml` and `target.yaml` for Raspberry Pi 4B + IMX219 are in `skills/eldev-intake/assets/example/`; copy and edit them.
+A complete example project for Raspberry Pi 4B + IMX219 is in `skills/eldev-intake/assets/example/`, laid out like your project root: copy and edit it.
 
 ### 3. Use the skills
 

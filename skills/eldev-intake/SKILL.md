@@ -18,7 +18,7 @@ The user supplies all of these. Never write or summarise manual content yourself
 
 These live at the project root as shown, since `check_context.py` looks there. A short pointer in the project's `CLAUDE.md` says which board and target are active, so a new session finds them without searching (see `assets/example/CLAUDE.md.snippet`). Switching work means editing that pointer.
 
-A filled example (Raspberry Pi 4B + IMX219, Yocto) is in `assets/example/`. Copy it and replace the values; its field names are the schema.
+A filled example (Raspberry Pi 4B + IMX219, Yocto) is in `assets/example/`, laid out like a project root with the `CLAUDE.md` pointer. Copy it and replace the values; its field names are the schema.
 
 Scripts live in `scripts/` at the plugin root, two directories up from this skill's base directory (`<plugin>` below), so other skills can share them.
 
