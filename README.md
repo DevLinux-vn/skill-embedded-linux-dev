@@ -62,10 +62,10 @@ Skills read these files from your project root. You supply them; the plugin neve
 │   ├── pinout.md                  pins, functions, voltage
 │   ├── build-guide.md             your build instructions
 │   ├── dt/                        device tree, defconfig
-│   └── manual/                    reference manual chapters (markdown)
+│   └── manual/                    reference manual, split into markdown chunks
 └── targets/<target>/
     ├── target.yaml                the one module being worked on
-    └── docs/                      its datasheets
+    └── docs/                      its datasheets, same chunk format
 ```
 
 Add the pointer to `CLAUDE.md` so every session knows what is active:
@@ -86,7 +86,7 @@ Skills trigger from what you ask; you do not have to name them.
 |---|---|
 | "Write a driver for the IMX219 on my Pi 4B" | `eldev-router` reads the context, classifies the request and hands off. If anything needed is missing, `eldev-intake` runs the readiness check and stops with a list of what to add |
 | "Set up context for this board" / "I changed the kernel to 6.12" | `eldev-intake` creates or updates `board.yaml` and `target.yaml`; your values always win and guesses are marked `# assumed` |
-| "Here is the BCM2711 manual PDF" | `eldev-intake` converts it with `pdf_to_md.py` into chapter files |
+| "Here is the BCM2711 manual PDF" | `eldev-intake` converts it with `pdf_to_md.py` into searchable chunks |
 
 Only the router and intake skills exist so far; the driver, integrate, debug and log skills are planned (see the table above).
 
@@ -102,7 +102,7 @@ python3 <plugin>/scripts/check_context.py [--board NAME] [--target NAME] [--need
 
 Board and target come from `Board:` and `Target:` in `CLAUDE.md` unless given. It reports each item as `OK`, `EMPTY`, `MISSING` or `ASSUMED`, checks that the manual chapters the module needs exist (derived from the bus in `target.yaml`, or `--need`), and ends with `READY` (exit 0) or `NOT READY` (exit 1). Exit 2 means no board or target was found.
 
-**PDF to markdown:**
+**PDF to markdown chunks:**
 
 ```
 python3 <plugin>/scripts/pdf_to_md.py manual.pdf --out boards/<board>/manual
@@ -111,14 +111,25 @@ python3 <plugin>/scripts/pdf_to_md.py datasheet.pdf --out targets/<target>/docs
 
 | Option | Meaning |
 |---|---|
-| `--split chapters\|none` | One file per PDF bookmark chapter (default), or one file. No bookmarks also gives one file |
+| `--split chapters\|none` | One chapter per PDF bookmark (default), or the whole document as one chapter. No bookmarks also gives one chapter |
 | `--level N` | Deepest bookmark level that starts a chapter (default 1) |
+| `--max-words N` | Target chunk size in words (default 500) |
+| `--min-words N` | Smaller sections are merged into a neighbour (default 80) |
 | `--dpi N` | Resolution of extracted figures (default 200) |
 | `--min-coverage X` | Warn and exit 1 if a chapter's text coverage is below X (default 0.97) |
 
-Output in `--out`: `NN-<chapter>.md` per chapter, `images/` with each figure, `INDEX.md` (chapter, file, pages, words, figures, text coverage), and `figures.todo.txt`. Nothing is summarised, and text found inside a figure is kept beside it.
+Output in `--out`:
 
-To add an ASCII redraw of a block diagram, write it to `images/<same name as the png>.txt` and run the command again; it is embedded next to the image, which stays authoritative. Always check tables and multi-column pages against the PDF before relying on their values.
+```
+<doc>/<NN-chapter>/<NNN-section>.md   one chunk: front matter (id, document, chapter, section path, pages) + original text
+chunks.jsonl                          one metadata line per chunk
+INDEX.md                              chapters, chunk counts, pages, text coverage
+images/                               figures, and figures.todo.md
+```
+
+Chunks follow the headings, keep a table or figure whole, and carry their section path so a search hit explains itself. Several PDFs can share one `--out`; re-running a PDF replaces only its own chunks. Nothing is summarised, and text found inside a figure is kept beside it. Coverage counts words, not order, so check any table whose values you will rely on against the PDF.
+
+To add an ASCII redraw of a block diagram, write it to `images/<same name as the png>.md` and run the command again; it is embedded next to the image, which stays authoritative.
 
 ## Design principles
 
@@ -140,7 +151,7 @@ skills/
   eldev-intake/
 scripts/
   check_context.py       readiness check for board/target context
-  pdf_to_md.py           PDF manual -> markdown chapters and figures
+  pdf_to_md.py           PDF manual -> searchable markdown chunks and figures
 ```
 
 More skills and `evals/` are added with their own commits.

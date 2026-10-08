@@ -128,8 +128,8 @@ def main():
 
     # manual chapters needed for this module
     manual = bdir / "manual"
-    have = {p.stem.lower() for p in manual.glob("*.md")} if manual.is_dir() else set()
-    have.discard("index")
+    have = {str(p.relative_to(manual).with_suffix("")).lower()
+            for p in manual.rglob("*.md") if p.name.lower() != "index.md"} if manual.is_dir() else set()
     need = [n.strip().lower() for n in a.need.split(",")] if a.need else derive_needed(tdata)
     if not manual.is_dir():
         add("MISSING", f"boards/{board}/manual/")
@@ -137,7 +137,8 @@ def main():
         add("EMPTY", f"boards/{board}/manual/", "no chapter files")
     for n in need:
         hit = sorted(h for h in have if n in h)
-        add("OK" if hit else "MISSING", f"manual chapter '{n}'", ", ".join(hit))
+        add("OK" if hit else "MISSING", f"manual chapter '{n}'",
+            ", ".join(hit[:2]) + (f" (+{len(hit) - 2} more)" if len(hit) > 2 else ""))
 
     width = max(len(r[1]) for r in rows)
     print(f"board={board} target={target}")

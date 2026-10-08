@@ -11,14 +11,14 @@ Write board and target facts down once, in files in the user's project, so later
 
 - `boards/<board>/board.yaml`: SoC, kernel, toolchain, build system and commands, flash, debug, voltage.
 - `boards/<board>/pinout.md`, `build-guide.md`, `dt/`: pinout, the user's build guide, device tree and defconfig.
-- `boards/<board>/manual/`: reference manual chapters as markdown, one file per chapter.
+- `boards/<board>/manual/`: the reference manual as markdown chunks, one folder per chapter, made by `pdf_to_md.py`.
 - `targets/<target>/target.yaml` and `docs/`: the one module being worked on and its datasheets.
 
 The user supplies all of these. Never write or summarise manual content yourself; converting a PDF mechanically (below) is the only way manual text enters the project.
 
 These live at the project root as shown, since `check_context.py` looks there. A short pointer in the project's `CLAUDE.md` says which board and target are active, so a new session finds them without searching (see `assets/example/CLAUDE.md.snippet`). Switching work means editing that pointer.
 
-A filled example (Raspberry Pi 4B + IMX219, Yocto) is in `assets/example/`, laid out like a project root with the `CLAUDE.md` pointer. Copy it and replace the values; its field names are the schema.
+A filled example (Raspberry Pi 4B + IMX219, Yocto) is in `assets/example/`, laid out like a project root, with the `CLAUDE.md` pointer. Copy it and replace the values; its field names are the schema.
 
 Scripts live in `scripts/` at the plugin root, two directories up from this skill's base directory (`<plugin>` below), so other skills can share them.
 
@@ -35,12 +35,14 @@ List the files in `manual/` and open only the chapters for the module in hand pl
 
 ## Converting a PDF
 
-When the user gives a PDF manual or datasheet instead of markdown, convert it with the script. It needs `pip install pymupdf4llm`.
+When the user gives a PDF manual or datasheet, convert it with the script. It needs `pip install pymupdf4llm`. Convert only when asked; the user normally supplies the converted folder.
 
 ```
 python3 <plugin>/scripts/pdf_to_md.py <file.pdf> --out boards/<board>/manual      # a module datasheet: --out targets/<target>/docs
 ```
 
-It splits by the PDF bookmarks (one file per chapter, or one file if there are none), extracts each figure as a png, keeps any text found inside a figure, and writes `INDEX.md` with a text-coverage figure per chapter. Nothing is summarised. If a chapter reports LOW COVERAGE, tell the user and compare against the PDF before relying on it. Tables with no ruling lines and multi-column layouts can come out flattened, so check any table whose values you will use.
+It splits by the PDF bookmarks into chapters, cuts each chapter at its headings into chunks of about 500 words (tables, code and figures are never split), and writes under `--out`: `<doc>/<chapter>/<NNN-section>.md` (front matter with id, document, chapter, section path and pages, then the original text), `chunks.jsonl` (one metadata line per chunk), `INDEX.md` (chapters, chunk counts, text coverage) and `images/`. Several PDFs can share one `--out`; re-running a PDF replaces only its own chunks. Nothing is summarised.
 
-Figures listed in `figures.todo.txt` can get an ASCII redraw. Open each png, write a faithful transcription of the blocks, labels and arrows to `images/<same name>.txt`, change nothing you cannot read, and re-run the script to embed it beside the image. The image stays authoritative; say so if a label is unclear instead of guessing.
+If a chapter reports LOW COVERAGE, tell the user and compare against the PDF before relying on it. Coverage counts words, not order, so a table whose labels and values were paired wrongly can still show a high figure: check any table whose values you will use against the PDF.
+
+Figures listed in `images/figures.todo.md` can get an ASCII redraw. Open each png, write a faithful transcription of the blocks, labels and arrows to `images/<same name>.md`, change nothing you cannot read, and re-run the script to embed it beside the image. The image stays authoritative; say so if a label is unclear instead of guessing.
